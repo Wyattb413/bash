@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #
-# $1 is a Y or N confirmation.
-# $2 is a function to execute if $1 is Y or y.
-# $3 is a function to execute if $1 is N or n.
-# If #1 is neither Y, y, N, or n, then IF_NO_EXIT_confirmationN_func will call itsself recursively.
+# Parameter $1 is a Y or N confirmation.
+# Parameter $2 is a function to execute if $1 is Y or y.
+# Parameter $3 is a function to execute if $1 is N or n.
+# If parameter $1 is neither Y, y, N, or n, then IF_NO_EXIT_confirmationN_func will call itsself recursively.
 #
 IF_NO_EXIT_confirmationN_func () {
     if [ $1 == 'Y' ] | [ $1 == 'y' ]; then

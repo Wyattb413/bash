@@ -1,0 +1,1 @@
+Hi there, this is a repo showing off bash scripts that I am working on or have finished. Thank you for your curiosity!
