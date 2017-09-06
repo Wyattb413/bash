@@ -1,0 +1,115 @@
+#!/bin/bash
+
+#
+# $1 is a Y or N confirmation.
+# $2 is a function to execute if $1 is Y or y.
+# $3 is a function to execute if $1 is N or n.
+# If #1 is neither Y, y, N, or n, then IF_NO_EXIT_confirmationN_func will call itsself recursively.
+#
+IF_NO_EXIT_confirmationN_func () {
+    if [ $1 == 'Y' ] | [ $1 == 'y' ]; then
+        echo 'yes'
+        if [ $2 ]; then
+            $2
+        fi
+    elif [ $1 == 'N' ] | [ $1 == 'n' ]; then
+        if [ $3 ]; then
+            $3
+        else
+            echo "Oh, okay...goodbye!"
+            exit
+        fi
+    else
+        echo "Sorry, can you try that again? Y/N"
+        read CONFIRMATION
+        IF_NO_EXIT_confirmationN_func $CONFIRMATION $2 $3
+    fi
+}
+
+#
+# If $1 is Y or y, then move onto step_three.
+# If $1 is N or n, then ask if user would like to continue.
+#     if user response is Y or y, then move onto step_three.
+#     if user response is N or n, then exit.
+# If $1 is neither Y, y, N, or n, then IF_NO_EXIT_confirmationN_func will call itsself recursively.
+#
+HAS_SLACK_API_TOKEN_func () {
+    if [ $1 == 'Y' ] | [ $1 == 'y' ]; then
+        step_three
+    elif [ $1 == 'N' ] | [ $1 == 'n' ]; then
+        echo "Okay, did you know that you can go here: https://api.slack.com/apps to Create a New App where you will be assigned a Client ID, Client Secret, and a Verification Token?"
+        echo "Please do so now if you plan to continue using this script..."
+        echo "Are you going to do it now? Y/N"
+        read CONFIRMATION
+        IF_NO_EXIT_confirmationN_func $CONFIRMATION step_three
+    else
+        echo "Sorry, can you try that again? Y/N"
+        read CONFIRMATION
+        IF_NO_EXIT_confirmationN_func $CONFIRMATION step_three
+    fi
+}
+
+#
+# If $1 is Y or y, then move onto step_three.
+# If $1 is N or n, then exit.
+#
+TRY_AGAIN_CLIENT_ID_func () {
+    echo "So your Client ID is not, $SLACK_CLIENT_ID? Would you like to try entering it again? Y/N"
+    read CONFIRMATION
+    IF_NO_EXIT_confirmationN_func $CONFIRMATION step_three
+}
+
+#
+# Prompt user to enter SLACK_TEAM_NAME.
+# If SLACK_TEAM_NAME_CONFIRMATION is Y or y, then move onto step_two.
+# If SLACK_TEAM_NAME_CONFIRMATION is N or n, then exit.
+#
+step_one () {
+    echo "Hello there, thank you for executing this script. We will now attempt to pull all the available messages from a specified slack channel. Let's proceed..."
+    echo "Please enter your Slack team's name: "
+
+    read SLACK_TEAM_NAME
+
+    echo "You entered $SLACK_TEAM_NAME, is this correct? Y/N"
+
+    read SLACK_TEAM_NAME_CONFIRMATION
+    IF_NO_EXIT_confirmationN_func $SLACK_TEAM_NAME_CONFIRMATION step_two
+}
+
+#
+# By this point $SLACK_TEAM_NAME is confirmed.
+# Prompt user to enter whether or not they have a Slack Client ID.
+# If HAS_SLACK_API_TOKEN is Y or y, then move onto step_three.
+# If HAS_SLACK_API_TOKEN is N or n, then prompt user to make a Slack App.
+# If user will not create Slack App (N or n), exit.
+# If user will create Slack App (Y or y), then continue to step_three.
+# If user responds with anything besides Y, y, N, or n, then IF_NO_EXIT_confirmationN_func will call itsself recursively.
+#
+step_two () {
+    echo "Awesome! Now that we have your Slack team's name, $SLACK_TEAM_NAME, let's go ahead and get your Slack API token...do you already have one available? Y/N"
+    read HAS_SLACK_API_TOKEN
+    HAS_SLACK_API_TOKEN_func $HAS_SLACK_API_TOKEN
+}
+
+#
+# By this point $SLACK_TEAM_NAME is confirmed and user is creating/created a Slack App and has a Client ID, Client Secret, and Verification Token
+# Prompt user for SLACK_CLIENT_ID
+# Confirm user enter SLACK_CLIENT_ID correctly
+# If so, move onto step_four
+# If not, then TRY_AGAIN_CLIENT_ID_func is called
+#     if TRY_AGAIN_CLIENT_ID_func's CONFIRMATION is Y or y, then move onto step_three
+#     if TRY_AGAIN_CLIENT_ID_func's CONFIRMATION is N or n, then exit
+#
+step_three () {
+    echo "Alrighty, lets start off with your Client ID (Don't worry, none of this is being stored anywhere other than in the RAM you're using to run this script!)"
+    read SLACK_CLIENT_ID
+    echo "You entered: $SLACK_CLIENT_ID, is this correct? Y/N"
+    read CONFIRMATION
+    IF_NO_EXIT_confirmationN_func $CONFIRMATION step_four TRY_AGAIN_CLIENT_ID_func
+}
+
+step_four () {
+    echo "Nice, so we have your Client ID, now we need your Client Secret..."
+}
+
+step_one
